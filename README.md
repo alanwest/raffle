@@ -1,6 +1,6 @@
 # Raffle
 
-A simple ticket-weighted raffle driven by a CSV of entrants and a one-line shell command.
+A simple ticket-weighted raffle. Two implementations are included: a set of shell scripts driven by a CSV (sections 1–3), and a self-contained Google Sheet via Apps Script (section 4).
 
 ## 1. Populate the template
 
@@ -17,12 +17,12 @@ Example:
 
 ```
 Alan,3
-Violet,10
+Susan,6
 Sam,2
-Barbara,14
+Barbara,9
 ```
 
-More tickets = proportionally higher odds. Above, Barbara holds 14 of 29 tickets, so she wins any single draw ~48% of the time.
+More tickets = proportionally higher odds. Above, Barbara holds 9 of 20 tickets, so she wins any single draw ~45% of the time.
 
 ## 2. Run the raffle
 
@@ -60,3 +60,28 @@ You can also point at a different entrants file with a second argument:
 ```bash
 ./draw-multiple.sh 3 other-entrants.csv
 ```
+
+## 4. Alternative: Google Sheet (Apps Script)
+
+`raffle.gs` is a self-contained version that lives entirely inside a Google Sheet — entrants, draw logic, and results all in one place, with a menu button instead of the command line.
+
+### Setup
+
+1. In a Google Sheet, put `Name` in **A1** and `Tickets` in **B1**, then list entrants from row 2 down (same shape as `entrants.csv`).
+2. Open **Extensions → Apps Script**, delete the placeholder code, paste the contents of `raffle.gs`, and **Save**.
+3. Reload the spreadsheet. A **🎟 Raffle** menu appears next to Help. (The first draw triggers a one-time Google authorization prompt — approve it.)
+
+### Drawing
+
+**🎟 Raffle → Draw winners…** asks two questions, covering both scenarios in one button:
+
+- **How many prizes** — any whole number.
+- **Can one person win more than once?** — *Yes* = independent weighted draws (repeats allowed, like `draw-multiple.sh`); *No* = distinct winners (like `draw-unique.sh`).
+
+### Results
+
+- Winners are written to columns **D/E** (`Place`, `Winner`).
+- An append-only **audit log** in columns **G/H** records each draw with a timestamp, tagged `[repeats]` or `[unique]`.
+- **🎟 Raffle → Clear results** wipes the D/E winners but keeps the audit log.
+
+Unlike a spreadsheet `RANDBETWEEN` formula (which re-rolls on every edit), this only draws when you click the menu — no accidental re-rolls.
